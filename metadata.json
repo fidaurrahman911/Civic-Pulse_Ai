@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Remix Remix CivicPulse AI",
+  "description": "Civic technology platform connecting citizens, volunteers, organizations, and administration through verified community impact and transparent problem reporting in Khyber Pakhtunkhwa.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
