@@ -582,7 +582,7 @@ export const ImpactNewPage: React.FC<ImpactNewPageProps> = ({ navigate }) => {
                   </div>
                   {isMismatch && (
                     <span className="text-[10px] text-[#B3261E] font-medium block mt-0.5">
-                      Penalized per evaluation rules (max 15 pts)
+                      Penalized per evaluation rules (0 - 20 pts)
                     </span>
                   )}
                 </div>
@@ -616,9 +616,9 @@ export const ImpactNewPage: React.FC<ImpactNewPageProps> = ({ navigate }) => {
                 <div>
                   <span className="text-[#4B5A6B] block">Evidence Confidence</span>
                   <span className={`text-base font-bold font-tabular ${
-                    verificationResult.confidence < 30 ? 'text-[#B3261E]' : 'text-[#0F1B2D]'
+                    verificationResult.confidence <= 25 ? 'text-[#B3261E]' : 'text-[#0F1B2D]'
                   }`}>
-                    {verificationResult.confidence}% {verificationResult.confidence < 30 && '(LOW)'}
+                    {verificationResult.confidence}% {verificationResult.confidence <= 25 && '(LOW)'}
                   </span>
                 </div>
                 <div>

@@ -175,20 +175,19 @@ Return a STRICT JSON object matching this schema:
 ${imagePart ? '- Photographic Evidence: [Attached image provided for visual verification]' : '- Photographic Evidence: [No image attached - penalize per critical evaluation rules]'}
 
 Analyze according to the SYSTEM_PROMPT evaluation rules:
-1. Inspect the image carefully. Does the image clearly display genuine civic/environmental action, public issue, or community work matching the selected category?
-2. If the photo shows unrelated objects (e.g., a random car, personal selfie, unrelated indoor room, random animal) that DO NOT match the selected category or claim:
-   - Set evidenceConfidence to LOW (below 30%).
-   - Set impactTier to "Invalid" or "Low".
-   - Set civicImpactScore to 0 - 15 points maximum.
-   - Explain clearly in the breakdown: "Uploaded image does not show evidence matching the selected category or claim."
-3. Compare the text description against the image. If the description claims environmental cleanup or civic work, but the photo shows no visual evidence of that work, penalize heavily.
-4. Score allocation:
-   - 0 - 20: Unrelated image, mismatch, spam, or false claim.
-   - 21 - 50: Low impact / minor issue with weak or partial visual proof.
-   - 51 - 80: Genuine verified civic action with clear photo evidence.
-   - 81 - 100: Major verified public improvement or community effort with unmistakable visual evidence.
+1. Does the photo explicitly show evidence matching the user's selected category and description?
+2. If the photo shows unrelated objects (e.g. personal vehicle, selfie, animal, random indoor room) that DO NOT directly prove the reported civic claim:
+   - Set evidenceConfidence between 0 and 25.
+   - Set impactTier to "Invalid".
+   - Set civicImpactScore between 0 and 20.
+   - Explain clearly in reasoning: "Uploaded image does not provide visual proof matching the reported action or category."
+3. Genuine civic verification:
+   - 0 - 20: Unrelated media, false claims, or spam.
+   - 21 - 45: Weak visual evidence or very minor individual effort.
+   - 46 - 75: Verified civic or environmental action with clear visual evidence.
+   - 76 - 100: Major verified public improvement or community-wide impact.
 
-Return strictly in the JSON format specified in the system instructions.`;
+Return ONLY a valid, raw JSON object matching the required structure without any markdown backticks.`;
 
       const contents = imagePart
         ? { parts: [imagePart, { text: textPrompt }] }
@@ -209,7 +208,11 @@ Return strictly in the JSON format specified in the system instructions.`;
       if (onProgress) onProgress(3, 'Finalizing evidence confidence and civic points ledger...');
       await sleep(100);
 
-      const rawText = response.text?.trim() || '{}';
+      let rawText = response.text?.trim() || '{}';
+      // Strip markdown code fences if model returned ```json or ```
+      if (rawText.startsWith('```')) {
+        rawText = rawText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+      }
       const parsed: Partial<VerificationAIResponse> = JSON.parse(rawText);
 
       // Parse and normalize AI response
@@ -232,18 +235,18 @@ Return strictly in the JSON format specified in the system instructions.`;
       const reasoning = parsed.reasoning || 'Evaluated photographic evidence and category relevance.';
 
       // Enforce strict evaluation boundaries:
-      // If photo shows unrelated objects or mismatch, ensure confidence is < 30, tier is Invalid/Low, score is 0-15
-      const isMismatch = evidenceConfidence < 30 || impactTier === 'Invalid' || civicImpactScore <= 20;
+      // If photo shows unrelated objects or mismatch: confidence <= 25, impactTier: "Invalid", score <= 20
+      const isMismatch = evidenceConfidence <= 25 || impactTier === 'Invalid' || civicImpactScore <= 20;
       if (isMismatch) {
-        if (evidenceConfidence > 30) evidenceConfidence = 25;
-        if (civicImpactScore > 15) civicImpactScore = 15;
-        if (impactTier !== 'Invalid' && impactTier !== 'Low') impactTier = 'Invalid';
+        if (evidenceConfidence > 25) evidenceConfidence = 15;
+        if (civicImpactScore > 20) civicImpactScore = 10;
+        impactTier = 'Invalid';
       }
 
       const warningDetail = isMismatch
-        ? (reasoning.toLowerCase().includes('uploaded image does not show')
+        ? (reasoning.toLowerCase().includes('uploaded image does not provide visual proof') || reasoning.toLowerCase().includes('uploaded image does not show')
             ? reasoning
-            : 'Uploaded image does not show evidence matching the selected category or claim.')
+            : 'Uploaded image does not provide visual proof matching the reported action or category.')
         : undefined;
 
       const checks: VerificationCheck[] = [

@@ -68,8 +68,8 @@ export class DemoCivicAIProvider implements CivicAIProvider {
       (input.category === 'Environment' && (evText.includes('phone') || evText.includes('computer')));
 
     if (isUnrelatedObjectOrMismatch) {
-      const summary = 'Uploaded image does not show evidence matching the selected category or claim.';
-      const reasoning = 'Critically inspected uploaded image: visual evidence shows unrelated objects (e.g. personal vehicle, indoor setting, or personal item) rather than verified civic, environmental, or community work matching the selected category.';
+      const summary = 'Visual evidence mismatch detected.';
+      const reasoning = 'The uploaded photo shows an unrelated object (e.g. personal vehicle or indoor space), which does not contain visual proof supporting the selected civic category. Uploaded image does not provide visual proof matching the reported action or category.';
 
       return {
         id: `ver-${Date.now()}`,
@@ -87,9 +87,9 @@ export class DemoCivicAIProvider implements CivicAIProvider {
         checks: [
           {
             key: 'visual_match',
-            label: 'Visual Evidence Match (Strict Rule)',
+            label: 'Visual Evidence Cross-Check (Strict Rule)',
             status: 'fail',
-            detail: 'Uploaded image does not show evidence matching the selected category or claim.',
+            detail: 'Uploaded image does not provide visual proof matching the reported action or category.',
           },
           {
             key: 'category_relevance',
@@ -119,9 +119,9 @@ export class DemoCivicAIProvider implements CivicAIProvider {
         explanation: [
           summary,
           reasoning,
-          'Score penalized to 10 points (0 - 15 points maximum for unrelated images or mismatch per CivicPulse rules).',
+          'Score allocated between 0 and 20 (10 points awarded) per CivicPulse strict scoring rules.',
         ],
-        warningNote: 'Uploaded image does not show evidence matching the selected category or claim.',
+        warningNote: 'Uploaded image does not provide visual proof matching the reported action or category.',
         isDemo: true,
       };
     }
