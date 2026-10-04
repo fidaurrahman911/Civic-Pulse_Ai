@@ -1,3 +1,9 @@
+[![Live Demo](https://img.shields.io/badge/Vercel-Live%20Demo-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://civic-pulse-aii.vercel.app/)
+
+**Live Production Link:** [https://civic-pulse-aii.vercel.app/](https://civic-pulse-aii.vercel.app/)
+
+
+
 # CivicPulse AI: Civic Technology Platform
 
 > **Tagline:** Do Good. Prove It. Get Recognized. Improve Your Community.  
